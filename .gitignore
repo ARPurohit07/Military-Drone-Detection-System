@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Model checkpoints are stored outside Git.
+weights/
+*.pth
+*.h5
+
+# Datasets and raw captures
+Chinese/
+Turkish/
+Negative/
+labels_chinese/
+labels_negative/
+labels_turkish/
+drone_dataset_3_test/
+drones/
+*.zip
+
+# Raw captures and provenance records stay local for this code-only release.
+dataset_raw/
+# Assembled datasets are local artifacts, not source files.
+drone_dataset_v2/
+dataset_sources/
+drone_dataset_binary_v*/
+drone_dataset_country_v*/
+
+# Training and inference outputs
+runs/
+detections/
+reports/cache/
+drone_detections.csv
+id_counter.txt
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Local editor settings
+.vscode/
+
+# Local history and presentation samples
+archive/
+reports/examples/
+cleanup_storage.ps1
+view*.jpg
+chinese_*.jpg
+
+# Ad-hoc run logs and scratch images
+app_run.log
+app_run.err
+*_smoke.jpg
+crop_montage.jpg
+train_binary*.log
+train_binary*.err

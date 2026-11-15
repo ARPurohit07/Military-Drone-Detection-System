@@ -1,0 +1,60 @@
+Dataset: drone_dataset_country_v3 (country_of_origin, 18 classes; drone_dataset_country_v3\classes.json)
+Checkpoint: weights/country_v3/best_model.pth
+Device: cuda
+Test images with drones: 385
+
+=== Localization versus attribution ===
+Class-agnostic mAP@0.5 : 0.5334
+Class-agnostic mAP@0.75: 0.3303
+Country-aware mAP@0.5  : 0.2355
+Relative mAP lost to attribution: 55.8%
+
+=== Country accuracy given IoU >= 0.5 ===
+Localized ground-truth boxes: 482
+Top-1 country correct: 162/482 (33.6%)
+Top-1 country accuracy: 162/482 (33.6%)
+Top-2 country accuracy: 232/482 (48.1%)
+Top-3 country accuracy: 285/482 (59.1%)
+Uniform-chance top-1 baseline: 5.6%
+
+Per-country accuracy among localized boxes:
+  Turkey               39/83     47.0%
+  USA                  49/82     59.8%
+  Russia                9/42     21.4%
+  Iran                  8/41     19.5%
+  China                10/40     25.0%
+  India                11/36     30.6%
+  Israel               15/36     41.7%
+  UAE                   1/21      4.8%
+  Serbia                2/17     11.8%
+  UK                    5/16     31.2%
+  France                2/14     14.3%
+  South Korea           2/11     18.2%
+  Italy                 5/10     50.0%
+  Poland                1/10     10.0%
+  Ukraine               1/8      12.5%
+  South Africa          0/7       0.0%
+  Pakistan              0/5       0.0%
+  Germany               2/3      66.7%
+
+Most common country confusions:
+    18  Turkey             -> USA
+    11  China              -> USA
+    10  China              -> Turkey
+     9  USA                -> Turkey
+     9  Russia             -> USA
+     8  Turkey             -> Israel
+     8  Turkey             -> Russia
+     8  Serbia             -> USA
+     7  Israel             -> USA
+     7  USA                -> Russia
+     6  India              -> Russia
+     6  Iran               -> USA
+     6  Russia             -> China
+     6  UAE                -> USA
+     6  Iran               -> Russia
+     5  Turkey             -> South Korea
+     5  India              -> Turkey
+     5  Iran               -> China
+     4  USA                -> Israel
+     4  USA                -> China

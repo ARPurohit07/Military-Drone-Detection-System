@@ -1,0 +1,98 @@
+Auto-labeler validation: Grounding DINO boxes vs. human annotations
+===================================================================
+
+Method
+------
+The zero-shot auto-labeler is scored against the 1325 hand-annotated boxes in
+the legacy dataset (drone_dataset_3_test). For each image the highest-scoring
+detection is compared to the best-matching human box by IoU. This measures only
+box geometry ("where"); the class label comes from the airframe registry via the
+scrape manifest, never from the detector.
+
+"clean-GT" excludes images whose human box covers more than 75% of the frame.
+There are 118 such boxes in the legacy dataset and many are lazy annotations, so
+disagreeing with them is not necessarily an error on the detector's part.
+
+Model: IDEA-Research/grounding-dino-tiny (172M params)
+Threshold: 0.25 box / 0.25 text
+Sample: 80 images (74 excluding near-full-frame GT), seed 0
+
+Results
+-------
+prompt                          all-GT                    clean-GT           miss
+                          mean   med   >=0.5        mean   med   >=0.5
+a drone. an unmanned
+  aerial vehicle.        0.652  0.681  81.2%       0.634  0.657  79.7%       0
+a military drone. an
+  unmanned aerial veh.   0.647  0.679  81.2%       0.629  0.657  79.7%       0
+a drone. an unmanned
+  aerial vehicle. an
+  aircraft.              0.581  0.651  68.8%       0.556  0.636  66.2%       0
+
+An earlier 150-image run of the three-phrase prompt agreed with this ordering
+(mean 0.582, median 0.656, 70.0% at IoU>=0.5, 0 misses).
+
+Conclusion
+----------
+The two-phrase prompt "a drone. an unmanned aerial vehicle." is what the
+pipeline uses. Adding "an aircraft." measurably hurts - it pulls the box toward
+whole-airframe and plane-like regions, costing 12 points of IoU>=0.5 - so the
+prompt is kept deliberately narrow.
+
+Miss rate is 0% across all three prompts: the detector finds something in every
+image. That means auto-labelling never silently drops a drone image, which is the
+failure that would matter most (an unlabelled drone image trains as background).
+
+Recall against a human annotator is ~80% at IoU>=0.5, not ~100%. The pipeline is
+built around that gap rather than ignoring it:
+
+  - Detections scoring below 0.40 are written with VOC's `difficult` flag and
+    skipped during training (config.TrainConfig.skip_difficult), so training sees
+    only the boxes the detector was confident about.
+  - Boxes covering >75% of the frame, degenerate boxes and sub-8px boxes are
+    rejected outright, which is the specific defect class the legacy dataset
+    carried 118 of.
+  - Every annotation records the airframe, query and annotator model, so the
+    labelling can be re-derived or audited later from the XML alone.
+
+
+Resolution and throughput
+=========================
+
+Grounding DINO's image processor defaults to shortest_edge=800 /
+longest_edge=1333 and will UPSCALE to reach it. Pre-resizing the PIL image was
+therefore silently undone, and peak memory sat at 3.71 GB of this card's
+4.29 GB. Resolution has to be set on the processor to have any effect.
+
+Measured on 40 legacy images with clean human boxes, GPU otherwise idle:
+
+config              batch   ms/img   peak VRAM   mean IoU   IoU>=0.5   7k imgs
+default 800/1333      2       1081     3.71 GB     0.608      80.0%    126 min
+480/800               2        309     1.85 GB     0.608      77.5%     36 min
+480/800               4        335     2.89 GB     0.608      77.5%     39 min
+
+Shipped: 480/800 at batch 2 (autolabel.PROCESSOR_SIZE).
+
+3.5x faster and half the memory for 2.5 points of IoU>=0.5, with mean IoU
+unchanged to three decimals. Batch 4 is marginally *slower* than batch 2 and
+uses 56% more memory - past a point the batch is padded to its largest member
+and the extra parallelism does not pay for the extra pixels.
+
+480/800 is not only the fast option, it is the principled one: it matches
+TrainConfig.min_size / max_size, so the auto-labeller sees images at the same
+resolution the Faster R-CNN being trained will see. Labelling at a resolution
+the downstream model never gets has no benefit.
+
+An earlier measurement of 5738 ms/img at this same setting was an artifact of
+two benchmark processes sharing the GPU. Any throughput number taken while
+another CUDA job is running on a 4 GB card is meaningless - the card was at
+3955 MiB of 4096 and thrashing.
+
+CAVEAT - small objects are NOT covered by this measurement. Every one of the 40
+sample images has a ground-truth box larger than 5% of the frame; the legacy
+dataset contains no small-object annotations at all (its boxes being
+indiscriminately large is part of why it needed replacing). Low resolution costs
+small distant aircraft first, and that cost is invisible here. If per-class AP
+later comes out weak for the small hand-launched types (RQ-11 Raven, Orlan-10,
+Skylark, Aladin), raising PROCESSOR_SIZE for those airframes is the first thing
+to try.

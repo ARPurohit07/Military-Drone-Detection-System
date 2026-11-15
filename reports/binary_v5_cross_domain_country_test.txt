@@ -1,0 +1,33 @@
+Using device: cuda
+Dataset: drone_dataset_country_v3  (label scheme: drone (binary))
+Checkpoint: weights\binary_v5_birds_focused\best_model.pth (epoch 7, val_loss nan)
+Model input resize: short side 480, long side <= 800
+Test set: 1476 images (385 with drones, 1091 negatives)
+
+=== Evaluation Results ===
+mAP@0.5      : 0.3604
+mAP@0.5:0.95 : 0.2339
+End-to-end inference: 89.98s (61.0 ms/image, 16.40 images/s)
+
+Per-class AP@0.5:
+  drone: 0.3604
+
+False Positive Rate @ 0.5: 0.0843 (8.4%, 92/1091)
+  95% Wilson interval: 6.9% to 10.2%
+  over 1091 held-out negatives
+
+  False positives by negative category:
+    deployment_false_positive   0.0%  (0/32)
+    smid_aeroplane             7.4%  (21/282)
+    smid_aeroplane_helicopter   0.0%  (0/3)
+    smid_bird                  0.6%  (2/313)
+    smid_bomb                  2.5%  (4/157)
+    smid_helicopter           21.4%  (65/304)
+
+Image-level operating-point sweep:
+  threshold  precision   recall       F1  specificity      FP      FN
+       0.10     0.5016   0.8208   0.6227       0.7122     314      69
+       0.25     0.5568   0.6623   0.6050       0.8139     203     130
+       0.50     0.6838   0.5169   0.5888       0.9157      92     186
+       0.75     0.7536   0.4052   0.5270       0.9533      51     229
+       0.90     0.8125   0.2701   0.4055       0.9780      24     281

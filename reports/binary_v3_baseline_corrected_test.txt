@@ -1,0 +1,32 @@
+Using device: cuda
+Dataset: drone_dataset_binary_v3_dedup2  (label scheme: drone (binary))
+Checkpoint: weights/best_model.pth (epoch 4, val_loss 0.0832)
+Test set: 1380 images (247 with drones, 1133 negatives)
+
+=== Evaluation Results ===
+mAP@0.5      : 0.2070
+mAP@0.5:0.95 : 0.1056
+End-to-end inference: 92.17s (66.8 ms/image, 14.97 images/s)
+
+Per-class AP@0.5:
+  drone: 0.2070
+
+False Positive Rate @ 0.5: 0.8976 (89.8%, 1017/1133)
+  95% Wilson interval: 87.9% to 91.4%
+  over 1133 held-out negatives
+
+  False positives by negative category:
+    deployment_false_positive  81.1%  (60/74)
+    smid_aeroplane           100.0%  (282/282)
+    smid_aeroplane_helicopter 100.0%  (3/3)
+    smid_bird                 69.3%  (217/313)
+    smid_bomb                 96.2%  (151/157)
+    smid_helicopter          100.0%  (304/304)
+
+Image-level operating-point sweep:
+  threshold  precision   recall       F1  specificity      FP      FN
+       0.10     0.1802   0.9960   0.3052       0.0124    1119       1
+       0.25     0.1829   0.9960   0.3090       0.0300    1099       1
+       0.50     0.1935   0.9879   0.3236       0.1024    1017       3
+       0.75     0.2145   0.9798   0.3520       0.2180     886       5
+       0.90     0.2387   0.9190   0.3790       0.3610     724      20
